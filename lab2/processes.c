@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 
 const char COUNTING_FIFO_FILENAME[] = "counting_fifo";
-sem_t semaphore; // for counting_fifo, SHOULD be in shm!
+// NOTE: use semaphores in shm!
 
 /* Example:
 1 3
@@ -43,12 +43,10 @@ void read_graph(char *graph_filename, int **graph) {
 
 // 3 => no more than 999 processes expected
 int get_count() {
-    sem_wait(&semaphore);
-    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_RDONLY);
     char *line;
     read(counting_fifo, &line, 3);
     close(counting_fifo);
-    sem_post(&semaphore);
     int n;
     sscanf(line, "%d", &n);
     printf("count is %d", n);
@@ -56,13 +54,11 @@ int get_count() {
 }
 
 void set_count(int count) {
-    sem_wait(&semaphore);
-    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_WRONLY);
     char n_str[3];
     sprintf(n_str, "%d", count);
     write(counting_fifo, n_str, strlen(n_str));
     close(counting_fifo);
-    sem_post(&semaphore);
     printf("count = %d", count);
 }
 
@@ -102,12 +98,11 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < n_processes; i++)
         graph[i] = (int *) malloc(((n_processes + 1) * sizeof(int)));
     read_graph(graph_filename, graph);
-    if (mkfifo(COUNTING_FIFO_FILENAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP) != 0) {
+    if (mkfifo(COUNTING_FIFO_FILENAME, 0666) != 0) {
         fprintf(stderr, "Unable to create fifo %s", COUNTING_FIFO_FILENAME);
         exit(EXIT_FAILURE);
     }
     set_count(0);
-    sem_init(&semaphore, 1, 1);
     spawn_children(0, graph);
     printf("Started %d processes", get_count());
 }
