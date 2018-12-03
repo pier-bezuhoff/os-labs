@@ -7,19 +7,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-const int BUFFSIZE = 256;
+const int BUFFSIZE = 512; // in bytes
+const int MAX_PATH_LENGTH = 128; // in chars
 
 
 void abort() {
     exit(EXIT_FAILURE);
 }
 
-void success() {
-    exit(EXIT_SUCCESS);
-}
-
 void wrong_usage(char *arg0) {
-    fprintf(stderr, "Usage: %s [-f] [-i] [-r] SOURCE... DESTINATION\n", arg0);
+    fprintf(stderr, "Usage: %s [-f] [-i] SOURCE... DESTINATION\n", arg0);
     abort();
 }
 
@@ -43,7 +40,7 @@ int copy_file_to_file(int input, char *destination) {
     return EXIT_SUCCESS;
 }
 
-int copy(char source[], char destination[], int force, int interactive, int recursive) {
+int copy(char source[], char destination[], int force, int interactive) {
     printf("Copying %s to %s...\n", source, destination);
     int input = open(source, O_RDONLY);
     if (input < 0) {
@@ -57,44 +54,48 @@ int copy(char source[], char destination[], int force, int interactive, int recu
         struct stat dest;
         int exists = stat(destination, &dest) == 0;
         if (exists) {
+	    char file_destination[MAX_PATH_LENGTH];
+	    strcpy(file_destination, destination);
+	    // dir => must exist!
             if (S_ISDIR(dest.st_mode)) {
-                char file_destination[] = "";
-                strcpy(file_destination, destination);
                 if (destination[strlen(destination) - 1] != '/') {
                     strcat(file_destination, "/");
                 }
                 strcat(file_destination, source);
-                return copy_file_to_file(input, file_destination);
-            } else {
+	    }
+            if (stat(file_destination, &dest) == 0) {
                 if (interactive) {
                     char answer[4]; // for "yes\n"
-                    printf("Destination %s already exists, overwrite? (Y/n) ", destination);
+                    printf("Destination %s already exists, overwrite? (Y/n) ", file_destination);
                     fgets(answer, 4, stdin);
                     if (tolower(answer[0]) == 'n') {
                         printf("Nothing written\n");
                         return EXIT_SUCCESS;
-                    }
+                    } else {
+			return copy_file_to_file(input, file_destination);
+		    }
                 } else if (!force) {
-                    printf("Destination %s already exists, nothing written\n", destination);
+                    printf("Destination %s already exists, nothing written\n", file_destination);
                     return EXIT_SUCCESS;
                 } else {
-                    return copy_file_to_file(input, destination);
+                    return copy_file_to_file(input, file_destination);
                 }
-            }
-        } else {
-            return copy_file_to_file(input, destination);
+	    } else {
+		return copy_file_to_file(input, file_destination);
+	    }
+	} else {
+	    return copy_file_to_file(input, destination);
         }
     }
 }
 
 int main(int argc, char *argv[]) {
-    int force = 0, interactive = 0, recursive = 0;
+    int force = 0, interactive = 0;
     int opt;
-    while ((opt = getopt(argc, argv, "fir")) != -1) {
+    while ((opt = getopt(argc, argv, "fi")) != -1) {
         switch (opt) {
         case 'f': force = 1; break;
         case 'i': interactive = 1; break;
-        case 'r': recursive = 1; break;
         default: wrong_usage(argv[0]);
         }
     }
@@ -121,8 +122,7 @@ int main(int argc, char *argv[]) {
         }
     }
     for (i = 0; i < n_sources; i++) {
-        copy(sources[i], destination, force, interactive, recursive);
-        printf("i %d\n", i);
+        copy(sources[i], destination, force, interactive);
     }
     printf("Done\n");
     return EXIT_SUCCESS;

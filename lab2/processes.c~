@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int **read_graph(char *filename) {
+    FILE *file = fopen(filename, "r");
+    char *line = NULL;
+    size_t len;
+    ssize_t read;
+    if (file == NULL)
+        exit(EXIT_FAILURE);
+    while ((read = getline(&line, &len, file)) >= 0) {
+        ; // f line
+    }
+    fclose(file);
+    if (line)
+        free(line);
+}
+
+int main(int argc, char *argv[]) {
+    char *graph_filename = "graph.txt";
+    if (argc == 1) {
+        graph_filename = argv[1];
+    } else if (argc > 1) {
+        fprintf(stderr, "Usage: %s [GRAPH]\n", argv[0]);
+    }
+    int **graph = read_graph(graph_filename);
+}
