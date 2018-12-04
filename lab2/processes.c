@@ -4,11 +4,20 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <sys/shm.h>
+#include <sys/ipc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-const char COUNTING_FIFO_FILENAME[] = "counting_fifo";
-// NOTE: use semaphores in shm!
+const char *COUNTING_FIFO_FILENAME = "counting_fifo";
+const int MAX_N_CHILDREN = 10;
+const int MAX_N_DIGITS = 3; // max # of digits in process id
+// in shared memory:
+int ***graph;
+sem_t *on_child; // on when child is waiting for input
+sem_t *on_got_current_count; // on fifo returning current count to child
+sem_t *on_sent_new_count; // on child sending new count to fifo
+int *n_running; // 3 of running processes
 
 /* Example:
 1 3
@@ -41,36 +50,71 @@ void read_graph(char *graph_filename, int **graph) {
     fclose(file);
 }
 
-// 3 => no more than 999 processes expected
-int get_count() {
+int fifo_fetch_count() {
     int counting_fifo = open(COUNTING_FIFO_FILENAME, O_RDONLY);
     char *line;
-    read(counting_fifo, &line, 3);
+    read(counting_fifo, &line, MAX_N_DIGITS);
     close(counting_fifo);
     int n;
     sscanf(line, "%d", &n);
-    printf("count is %d", n);
+    printf("fetched count: %d\n", n);
     return n;
 }
 
-void set_count(int count) {
+void fifo_send_count(int count) {
     int counting_fifo = open(COUNTING_FIFO_FILENAME, O_WRONLY);
-    char n_str[3];
+    char n_str[MAX_N_DIGITS];
     sprintf(n_str, "%d", count);
     write(counting_fifo, n_str, strlen(n_str));
     close(counting_fifo);
-    printf("count = %d", count);
+    printf("sended count: %d\n", count);
 }
 
-void spawn_children(int process_id, int **graph) {
+void spawn_counter() {
+    if (fork() == 0) { // in child
+        if (mkfifo(COUNTING_FIFO_FILENAME, 0666) != 0) {
+            fprintf(stderr, "Unable to create fifo %s\n", COUNTING_FIFO_FILENAME);
+            exit(EXIT_FAILURE);
+        }
+        int n = 0; // internal counter
+        sem_wait(on_child);
+        while ((*n_running) > 0) {
+            printf("counter sending %d...", n);
+            fifo_send_count(n);
+            sem_post(on_got_current_count);
+            sem_wait(on_sent_new_count);
+            n = fifo_fetch_count();
+            printf("new count: %d", n);
+            sem_wait(on_child);
+        }
+        printf("%d processes spawned\n", n);
+    }
+}
+
+void spawn_children(int process_id);
+
+void spawn_process(int process_id) {
     printf("%d:\n", process_id);
+    sem_post(on_child);
+    sem_post(on_child);
+    sem_wait(on_got_current_count);
+    printf("fetching current count...");
+    int n = fifo_fetch_count();
+    fifo_send_count(n + 1);
+    printf("sending new count %d", n + 1);
+    sem_post(on_sent_new_count);
+    spawn_children(process_id);
+    (*n_running)--;
+}
+
+void spawn_children(int process_id) {
     int child_id;
-    for (int j = 0; (child_id = graph[process_id][j]) != -1; j++) {
-        pid_t pid = fork();
-        if (pid == 0) { // child
+    // -1 indicates end
+    for (int j = 0; (child_id = (*graph)[process_id][j]) != -1; j++) {
+        (*n_running)++;
+        if (fork() == 0) { // child
             printf("%d -> %d\n", process_id, child_id);
-            set_count(get_count() + 1);
-            spawn_children(child_id, graph);
+            spawn_process(child_id);
             break;
         }
     }
@@ -84,25 +128,33 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: %s [GRAPH]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    printf("Reading graph from %s", graph_filename);
+    // read graph length and graph
     FILE *file = fopen(graph_filename, "r");
     if (file == NULL) {
-        fprintf(stderr, "Unable to read graph file %s", graph_filename);
+        fprintf(stderr, "Unable to read graph file %s\n", graph_filename);
         exit(EXIT_FAILURE);
     }
-    int n_processes = 0;
+    int n_lines = 0;
     while (!feof(file))
         if (fgetc(file) == '\n')
-            n_processes++;
-    int *graph[n_processes];
-    for (int i = 0; i < n_processes; i++)
-        graph[i] = (int *) malloc(((n_processes + 1) * sizeof(int)));
-    read_graph(graph_filename, graph);
-    if (mkfifo(COUNTING_FIFO_FILENAME, 0666) != 0) {
-        fprintf(stderr, "Unable to create fifo %s", COUNTING_FIFO_FILENAME);
-        exit(EXIT_FAILURE);
-    }
-    set_count(0);
-    spawn_children(0, graph);
-    printf("Started %d processes", get_count());
+            n_lines++;
+    int *local_graph[n_lines];
+    for (int i = 0; i < n_lines; i++)
+        local_graph[i] = malloc(sizeof(int[MAX_N_CHILDREN])); // each process starts <= MAX_N_CHILDREN children
+    read_graph(graph_filename, local_graph);
+    // setup shared memory
+    graph = shmat(shmget(IPC_PRIVATE, sizeof(int[n_lines][MAX_N_CHILDREN]), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    *graph = local_graph;
+    on_child = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    sem_init(on_child, 1, 0);
+    on_got_current_count = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    sem_init(on_got_current_count, 1, 0);
+    on_sent_new_count = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    sem_init(on_sent_new_count, 1, 0);
+    n_running = shmat(shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    *n_running = 0;
+    // start
+    spawn_counter();
+    (*n_running)++;
+    spawn_process(0);
 }

@@ -2,54 +2,54 @@
 ;; --------------------------------------------------------------------------
 ;; Desktop File for Emacs
 ;; --------------------------------------------------------------------------
-;; Created Tue Oct 16 00:53:25 2018
+;; Created Tue Dec  4 17:57:21 2018
 ;; Desktop file format version 208
 ;; Emacs version 26.1
 
 ;; Global section:
-(setq desktop-saved-frameset [frameset 1 (23493 3157 690666 629000) (desktop . "208") "pierbezuhoff@pierbezuhoffG3" nil nil ((((minibuffer . t) (undecorated) (override-redirect) (font-backend xft x) (font . "-PfEd-DejaVu Sans Mono-normal-normal-normal-*-23-*-*-*-m-0-iso10646-1") (font-parameter . "Monospace 14") (border-width . 0) (internal-border-width . 0) (right-divider-width . 0) (bottom-divider-width . 0) (vertical-scroll-bars) (horizontal-scroll-bars) (foreground-color . "#f6f3e8") (background-color . "#242424") (mouse-color . "black") (border-color . "black") (screen-gamma) (line-spacing) (left-fringe . 8) (right-fringe . 8) (no-special-glyphs) (scroll-bar-foreground) (scroll-bar-background) (menu-bar-lines . 1) (tool-bar-lines . 0) (title) (wait-for-wm . t) (tool-bar-position . top) (inhibit-double-buffering) (icon-type . t) (auto-raise) (auto-lower) (cursor-type . box) (scroll-bar-width . 0) (scroll-bar-height . 0) (alpha) (no-focus-on-map) (no-accept-focus) (fullscreen . maximized) (visibility . t) (skip-taskbar) (z-group) (display-type . color) (background-mode . dark) (cursor-color . "#656565") (sticky) (environment) (frameset--id . "81F9-7807-BA35-AF87") (frameset--mini t . t) (height . 34) (width . 136) (modeline . t) (unsplittable) (left + -1) (top . 33) (icon-name) (display . ":0") (explicit-name)) ((min-height . 4) (min-width . 10) (min-height-ignore . 2) (min-width-ignore . 4) (min-height-safe . 1) (min-width-safe . 2) (min-pixel-height . 112) (min-pixel-width . 140) (min-pixel-height-ignore . 56) (min-pixel-width-ignore . 56) (min-pixel-height-safe . 28) (min-pixel-width-safe . 28)) leaf (pixel-width . 1920) (pixel-height . 943) (total-width . 137) (total-height . 33) (normal-height . 1.0) (normal-width . 1.0) (buffer "copy.c" (selected . t) (hscroll . 0) (fringes 8 8 nil) (margins nil) (scroll-bars nil 0 t nil 0 t) (vscroll . 0) (dedicated) (point . 1) (start . 1))))])
+(setq desktop-saved-frameset [frameset 1 (23558 38353 353847 193000) (desktop . "208") "pierbezuhoff@dell-g3-3579" nil nil ((((minibuffer . t) (undecorated) (override-redirect) (font-backend xft x) (font . "-1ASC-Droid Sans Mono-normal-normal-normal-*-23-*-*-*-m-0-iso10646-1") (font-parameter . "Droid Sans Mono 14") (border-width . 0) (internal-border-width . 0) (right-divider-width . 0) (bottom-divider-width . 0) (vertical-scroll-bars) (horizontal-scroll-bars) (foreground-color . "#f6f3e8") (background-color . "#242424") (mouse-color . "black") (border-color . "black") (screen-gamma) (line-spacing) (left-fringe . 8) (right-fringe . 8) (no-special-glyphs) (scroll-bar-foreground) (scroll-bar-background) (menu-bar-lines . 0) (tool-bar-lines . 0) (title) (wait-for-wm . t) (tool-bar-position . top) (inhibit-double-buffering) (icon-type . t) (auto-raise) (auto-lower) (cursor-type . box) (scroll-bar-width . 0) (scroll-bar-height . 0) (alpha) (no-focus-on-map) (no-accept-focus) (fullscreen . maximized) (visibility . t) (skip-taskbar) (z-group) (display-type . color) (background-mode . dark) (cursor-color . "#656565") (sticky) (environment) (frameset--id . "AEAB-0C9D-2B7E-97BA") (frameset--mini t . t) (height . 36) (width . 136) (modeline . t) (unsplittable) (left + -1) (top . 33) (icon-name) (display . ":0") (explicit-name)) ((min-height . 4) (min-width . 10) (min-height-ignore . 2) (min-width-ignore . 4) (min-height-safe . 1) (min-width-safe . 2) (min-pixel-height . 112) (min-pixel-width . 140) (min-pixel-height-ignore . 56) (min-pixel-width-ignore . 56) (min-pixel-height-safe . 28) (min-pixel-width-safe . 28)) leaf (pixel-width . 1920) (pixel-height . 981) (total-width . 137) (total-height . 35) (normal-height . 1.0) (normal-width . 1.0) (buffer "processes.c" (selected . t) (hscroll . 0) (fringes 8 8 nil) (margins nil) (scroll-bars nil 0 t nil 0 t) (vscroll . 0) (dedicated) (point . 1) (start . 1))))])
 (setq desktop-missing-file-warning nil)
 (setq tags-file-name nil)
 (setq tags-table-list nil)
-(setq search-ring nil)
+(setq search-ring '("pr"))
 (setq regexp-search-ring nil)
 (setq register-alist nil)
 (setq file-name-history '("~/Programming/os-labs/"))
 
 ;; Buffer section -- buffers listed in same order as in buffer list:
 (desktop-create-buffer 208
-  "/home/pierbezuhoff/Programming/os-labs/lab1/copy.c"
-  "copy.c"
+  "/home/pierbezuhoff/Programming/os-labs/lab2/processes.c"
+  "processes.c"
   'c-mode
-  '(abbrev-mode eldoc-mode company-mode irony-mode flycheck-mode)
+  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
   1
   '(nil nil)
   nil
   nil
-  '((buffer-display-time 23493 3153 94002 548000) (buffer-file-coding-system . undecided-unix))
+  '((buffer-display-time 23558 38349 912859 967000) (buffer-file-coding-system . undecided-unix))
   '((mark-ring nil)))
 
 (desktop-create-buffer 208
   nil
-  "lab1"
+  "lab2"
   'dired-mode
-  nil
-  320
-  '(nil nil)
+  '(override-global-mode)
+  573
+  '(320 nil)
   t
-  '("/home/pierbezuhoff/Programming/os-labs/lab1/")
-  '((buffer-display-time 23493 3142 712742 205000))
+  '("/home/pierbezuhoff/Programming/os-labs/lab2/")
+  '((buffer-display-time 23558 38341 952797 442000))
   '((mark-ring nil)))
 
 (desktop-create-buffer 208
-  nil
-  "os-labs"
-  'dired-mode
-  nil
-  309
+  "/home/pierbezuhoff/Programming/os-labs/lab2/graph.txt"
+  "graph.txt"
+  'text-mode
+  '(override-global-mode)
+  1
   '(nil nil)
-  t
-  '("/home/pierbezuhoff/Programming/os-labs/")
-  '((buffer-display-time 23493 3140 612745 815000))
+  nil
+  nil
+  '((buffer-display-time 23558 38341 760191 185000) (buffer-file-coding-system . undecided-unix))
   '((mark-ring nil)))
 
