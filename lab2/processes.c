@@ -12,12 +12,12 @@
 const char *COUNTING_FIFO_FILENAME = "counting_fifo";
 const int MAX_N_CHILDREN = 10;
 const int MAX_N_DIGITS = 3; // max # of digits in process id
+int **graph;
+int n_lines; // # lines in graph.txt
 // in shared memory:
-int ***graph;
-sem_t *on_child; // on when child is waiting for input
-sem_t *on_got_current_count; // on fifo returning current count to child
-sem_t *on_sent_new_count; // on child sending new count to fifo
-int *n_running; // 3 of running processes
+sem_t *syncronization;
+int *count; // # of processes
+int *n_running;
 
 /* Example:
 1 3
@@ -44,79 +44,49 @@ void read_graph(char *graph_filename, int **graph) {
             graph[i][j] = process_id;
             j++;
         }
-        graph[i][j] = -1; // indicate end
+        for ( ; j < n_lines; j++)
+            graph[i][j] = -1;
+        graph[i][j] = -1; // indicate n_running
         i++;
     }
     fclose(file);
 }
 
-int fifo_fetch_count() {
-    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_RDONLY);
-    char *line;
-    read(counting_fifo, &line, MAX_N_DIGITS);
-    close(counting_fifo);
-    int n;
-    sscanf(line, "%d", &n);
-    printf("fetched count: %d\n", n);
-    return n;
-}
-
-void fifo_send_count(int count) {
-    int counting_fifo = open(COUNTING_FIFO_FILENAME, O_WRONLY);
-    char n_str[MAX_N_DIGITS];
-    sprintf(n_str, "%d", count);
-    write(counting_fifo, n_str, strlen(n_str));
-    close(counting_fifo);
-    printf("sended count: %d\n", count);
-}
-
-void spawn_counter() {
-    if (fork() == 0) { // in child
-        if (mkfifo(COUNTING_FIFO_FILENAME, 0666) != 0) {
-            fprintf(stderr, "Unable to create fifo %s\n", COUNTING_FIFO_FILENAME);
-            exit(EXIT_FAILURE);
-        }
-        int n = 0; // internal counter
-        sem_wait(on_child);
-        while ((*n_running) > 0) {
-            printf("counter sending %d...", n);
-            fifo_send_count(n);
-            sem_post(on_got_current_count);
-            sem_wait(on_sent_new_count);
-            n = fifo_fetch_count();
-            printf("new count: %d", n);
-            sem_wait(on_child);
-        }
-        printf("%d processes spawned\n", n);
-    }
-}
-
 void spawn_children(int process_id);
 
 void spawn_process(int process_id) {
-    printf("%d:\n", process_id);
-    sem_post(on_child);
-    sem_post(on_child);
-    sem_wait(on_got_current_count);
-    printf("fetching current count...");
-    int n = fifo_fetch_count();
-    fifo_send_count(n + 1);
-    printf("sending new count %d", n + 1);
-    sem_post(on_sent_new_count);
+    if (process_id < 0 || process_id > 10)
+        fprintf(stderr, "strange process_id: %d\n", process_id);
+    (*n_running)++;
+    (*count)++;
+    printf("(%d/%d) +%d\n", *n_running, *count, process_id);
+    sem_post(syncronization);
     spawn_children(process_id);
+    sem_wait(syncronization);
     (*n_running)--;
+    printf("(%d/%d) -%d\n", *n_running, *count, process_id);
+    if ((*n_running) == 0)
+        printf("%d processes spawned\n", *count);
+    sem_post(syncronization);
 }
 
 void spawn_children(int process_id) {
     int child_id;
-    // -1 indicates end
-    for (int j = 0; (child_id = (*graph)[process_id][j]) != -1; j++) {
-        (*n_running)++;
+    // -1 indicates n_running
+    int j = 0;
+    child_id = graph[process_id][j];
+    while (child_id != -1) {
         if (fork() == 0) { // child
+            sem_wait(syncronization);
             printf("%d -> %d\n", process_id, child_id);
             spawn_process(child_id);
-            break;
+            exit(EXIT_SUCCESS);
         }
+        j++;
+        if (j >= n_lines)
+            child_id = -1;
+        else
+            child_id = graph[process_id][j];
     }
 }
 
@@ -134,27 +104,21 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Unable to read graph file %s\n", graph_filename);
         exit(EXIT_FAILURE);
     }
-    int n_lines = 0;
+    n_lines = 0;
     while (!feof(file))
         if (fgetc(file) == '\n')
             n_lines++;
-    int *local_graph[n_lines];
+    graph = malloc(sizeof(int[n_lines]));
     for (int i = 0; i < n_lines; i++)
-        local_graph[i] = malloc(sizeof(int[MAX_N_CHILDREN])); // each process starts <= MAX_N_CHILDREN children
-    read_graph(graph_filename, local_graph);
+        graph[i] = malloc(sizeof(int[MAX_N_CHILDREN])); // each process starts <= MAX_N_CHILDREN children
+    read_graph(graph_filename, graph);
     // setup shared memory
-    graph = shmat(shmget(IPC_PRIVATE, sizeof(int[n_lines][MAX_N_CHILDREN]), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
-    *graph = local_graph;
-    on_child = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
-    sem_init(on_child, 1, 0);
-    on_got_current_count = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
-    sem_init(on_got_current_count, 1, 0);
-    on_sent_new_count = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
-    sem_init(on_sent_new_count, 1, 0);
+    syncronization = shmat(shmget(IPC_PRIVATE, sizeof(sem_t), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    sem_init(syncronization, 1, 1);
+    count = shmat(shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
+    *count = 0;
     n_running = shmat(shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
     *n_running = 0;
     // start
-    spawn_counter();
-    (*n_running)++;
     spawn_process(0);
 }
