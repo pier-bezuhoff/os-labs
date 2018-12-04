@@ -47,7 +47,7 @@ void read_graph(char *graph_filename, int **graph) {
         }
         for ( ; j < n_lines; j++)
             graph[i][j] = -1;
-        graph[i][j] = -1; // indicate n_running
+        graph[i][j] = -1; // indicate end
         i++;
     }
     fclose(file);
@@ -76,12 +76,12 @@ void spawn_process(int process_id) {
 
 void spawn_children(int process_id) {
     int child_id;
-    // -1 indicates n_running
+    // -1 indicates end
     int j = 0;
     child_id = graph[process_id][j];
     while (child_id != -1) {
         (*potential)++;
-        if (fork() == 0) { // child
+        if (fork() == 0) { // in child
             sem_wait(syncronization);
             printf("%d -> %d\n", process_id, child_id);
             spawn_process(child_id);
