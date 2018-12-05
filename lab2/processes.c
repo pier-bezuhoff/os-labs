@@ -1,13 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <semaphore.h>
 #include <sys/shm.h>
-#include <sys/ipc.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "graph.c"
 
 const int DEBUG = 1;
@@ -17,6 +10,7 @@ int **graph;
 int n_lines; // # of lines in graph file
 // in shared memory:
 sem_t *syncronization;
+sem_t *on_end;
 int *count; // # of processes
 int *n_running;
 int *potential;
@@ -37,7 +31,7 @@ void spawn_process(int process_id) {
         printf("(%d[%d]/%d) -%d\n", *n_running, *potential, *count, process_id);
     (*potential)--;
     if ((*potential) == 0)
-        printf("%d processes spawned\n", *count);
+        sem_post(on_end);
     sem_post(syncronization);
     exit(EXIT_SUCCESS);
 }
@@ -78,12 +72,17 @@ int main(int argc, char *argv[]) {
     // setup shared memory
     syncronization = shm_alloc(sizeof(sem_t));
     sem_init(syncronization, 1, 0);
+    on_end = shm_alloc(sizeof(sem_t));
+    sem_init(on_end, 1, 0);
     count = shm_alloc(sizeof(int));
     *count = 0;
     potential = shm_alloc(sizeof(int));
-    *potential = 1; // strange, but works
+    *potential = 1; // inc in spawn_children
     n_running = shm_alloc(sizeof(int));
-    *n_running = 0;
+    *n_running = 0; // inc in spawn_process
     // start
-    spawn_process(0);
+    if (fork() == 0)
+        spawn_process(0);
+    sem_wait(on_end);
+    printf("%d processes spawned\n", *count);
 }

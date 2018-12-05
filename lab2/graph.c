@@ -10,7 +10,7 @@
 int **read_graph(const char *graph_filename, int width) {
     FILE *file = fopen(graph_filename, "r");
     if (file == NULL) {
-        fprintf(stderr, "Unable to read graph file %s", graph_filename);
+        fprintf(stderr, "Unable to read graph file %s\n", graph_filename);
         exit(EXIT_FAILURE);
     }
     // count lines to allocate graph
@@ -37,8 +37,9 @@ int **read_graph(const char *graph_filename, int width) {
             graph[i][j] = process_id;
             j++;
         }
-        for ( ; j <= n_lines; j++)
+        for ( ; j < n_lines; j++)
             graph[i][j] = -1; // indicate end
+        graph[i][j] = -1; // indicate end
         i++;
     }
     fclose(file);
@@ -48,7 +49,7 @@ int **read_graph(const char *graph_filename, int width) {
 int count_lines(const char *graph_filename) {
     FILE *file = fopen(graph_filename, "r");
     if (file == NULL) {
-        fprintf(stderr, "Unable to read graph file %s", graph_filename);
+        fprintf(stderr, "Unable to read graph file %s\n", graph_filename);
         exit(EXIT_FAILURE);
     }
     int n_lines = 0;

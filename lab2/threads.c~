@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include <pthread.h>
+#include <stdint.h>
 #include <sys/shm.h>
 #include <sys/ipc.h>
 #include <sys/types.h>
@@ -22,7 +23,7 @@ int n_running;
 void spawn_children(int thread_id);
 
 void *start_thread(void *thread_id_ptr) {
-    int thread_id = *((int *) thread_id_ptr);
+    int thread_id = (intptr_t) thread_id_ptr;
     count++;
     n_running++;
     if (DEBUG)
@@ -32,8 +33,6 @@ void *start_thread(void *thread_id_ptr) {
     n_running--;
     if (DEBUG)
         printf("(%d/%d) -%d\n", n_running, count, thread_id);
-    if (n_running == 0)
-        printf("%d threads spawned\n", count);
     exit(EXIT_SUCCESS);
 }
 
@@ -46,7 +45,7 @@ void spawn_children(int thread_id) {
         pthread_t child;
         if (DEBUG)
             printf("%d -> %d\n", thread_id, child_id);
-        pthread_create(&child, NULL, start_thread, (void *) child_id);
+        pthread_create(&child, NULL, start_thread, (void *) (intptr_t) child_id);
         pthread_join(child_id, NULL);
         j++;
         child_id = graph[thread_id][j];
@@ -73,4 +72,5 @@ int main(int argc, char *argv[]) {
     n_running = 0;
     // start
     start_thread(0);
+    printf("%d threads spawned\n", count);
 }

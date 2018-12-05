@@ -1,15 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <semaphore.h>
 #include <pthread.h>
 #include <stdint.h>
-#include <sys/shm.h>
-#include <sys/ipc.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include "graph.c"
 
 const int DEBUG = 1;
@@ -33,20 +23,20 @@ void *start_thread(void *thread_id_ptr) {
     n_running--;
     if (DEBUG)
         printf("(%d/%d) -%d\n", n_running, count, thread_id);
-    exit(EXIT_SUCCESS);
+    return NULL;
 }
 
 void spawn_children(int thread_id) {
     int child_id;
-    // -1 indicates end
     int j = 0;
     child_id = graph[thread_id][j];
+    // -1 indicates end
     while (child_id != -1) {
         pthread_t child;
         if (DEBUG)
             printf("%d -> %d\n", thread_id, child_id);
         pthread_create(&child, NULL, start_thread, (void *) (intptr_t) child_id);
-        pthread_join(child_id, NULL);
+        pthread_join(child, NULL);
         j++;
         child_id = graph[thread_id][j];
     }
@@ -60,12 +50,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: %s [GRAPH]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
-    // read graph length and graph itself
-    FILE *file = fopen(graph_filename, "r");
-    if (file == NULL) {
-        fprintf(stderr, "Unable to read graph file %s\n", graph_filename);
-        exit(EXIT_FAILURE);
-    }
+    // read graph
     graph = read_graph(graph_filename, MAX_N_CHILDREN);
     n_lines = count_lines(graph_filename);
     count = 0;
