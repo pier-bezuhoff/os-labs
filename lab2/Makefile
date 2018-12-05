@@ -1,3 +1,3 @@
 OBJ = processes.o
 copy: $(OBJ)
-	gcc -pthread -o spawn_processes $(OBJ)
+	gcc -Wall -pthread -o spawn_processes $(OBJ)
