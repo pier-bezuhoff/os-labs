@@ -7,7 +7,7 @@ const int MAX_N_CHILDREN = 10;
 const char *DEFAULT_GRAPH_FILENAME = "test_graph1.txt";
 int **graph;
 int n_lines; // # of lines in graph.txt
-int count; // # of processes
+int count; // # of threads
 int n_running;
 
 void spawn_children(int thread_id);

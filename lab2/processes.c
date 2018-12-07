@@ -54,7 +54,7 @@ void spawn_children(int process_id) {
     }
 }
 
-void *shm_alloc(int size) {
+void *shm_alloc(size_t size) {
     return shmat(shmget(IPC_PRIVATE, size, IPC_CREAT | IPC_EXCL | 0666), NULL, 0);
 }
 
