@@ -14,7 +14,6 @@ sem_t *on_end;
 int *count; // # of processes
 int *n_running;
 int *potential;
-// maybe: use volatile
 
 void spawn_children(int process_id);
 

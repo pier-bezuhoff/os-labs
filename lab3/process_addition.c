@@ -3,6 +3,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include <signal.h>
 #include <sys/shm.h>
 
 const int MIN_WIDTH = 2;
@@ -19,7 +20,7 @@ sem_t *on_generated;
 sem_t *on_added;
 sem_t *on_printed;
 sem_t *on_done;
-volatile int *end; // is volatile essential?
+int *end; // volatile?
 
 int randrange(int min, int max) {
     return min + rand() / (RAND_MAX / (max - min));
@@ -100,6 +101,14 @@ void sem_create(sem_t **semaphore, int initial_value) {
     sem_init(*semaphore, 1, initial_value);
 }
 
+void on_interruption(int signo) {
+    *end = 1; // notify all 3 processes
+    sem_post(on_printed);
+    sem_post(on_generated);
+    sem_post(on_added);
+    exit(EXIT_SUCCESS);
+}
+
 int main(int argc, char *argv[]) {
     // argc == 2 => read matrix from file
     // setup shared memory
@@ -115,18 +124,16 @@ int main(int argc, char *argv[]) {
     end = shm_alloc(sizeof(int));
     *end = 0;
     // start
+    signal(SIGINT, on_interruption);
     spawn_generator();
     spawn_adder();
     spawn_printer();
     sem_post(on_printed); // invoke generator
     // stop
-    int countdown = 3;
-    while (countdown > 0) {
+    int countdown = 5;
+    while (1 /*countdown > 0*/) {
         sem_wait(on_done);
         countdown--;
     }
-    *end = 1; // notify all 3 processes
-    sem_post(on_printed);
-    sem_post(on_generated);
-    sem_post(on_added);
+    on_interruption(0);
 }
