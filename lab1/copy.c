@@ -10,14 +10,9 @@
 const int BUFFSIZE = 512; // in bytes
 const int MAX_PATH_LENGTH = 128; // in chars
 
-
-void abort() {
+void wrong_usage(char *cmd) {
+    fprintf(stderr, "Usage: %s [-f] [-i] source [source [...]] destination\n", cmd);
     exit(EXIT_FAILURE);
-}
-
-void wrong_usage(char *arg0) {
-    fprintf(stderr, "Usage: %s [-f] [-i] SOURCE... DESTINATION\n", arg0);
-    abort();
 }
 
 int copy_file_to_file(int input, char *destination) {
@@ -54,15 +49,15 @@ int copy(char source[], char destination[], int force, int interactive) {
         struct stat dest;
         int exists = stat(destination, &dest) == 0;
         if (exists) {
-	    char file_destination[MAX_PATH_LENGTH];
-	    strcpy(file_destination, destination);
-	    // dir => must exist!
+            char file_destination[MAX_PATH_LENGTH];
+            strcpy(file_destination, destination);
+            // dir => must exist!
             if (S_ISDIR(dest.st_mode)) {
                 if (destination[strlen(destination) - 1] != '/') {
                     strcat(file_destination, "/");
                 }
                 strcat(file_destination, source);
-	    }
+            }
             if (stat(file_destination, &dest) == 0) {
                 if (interactive) {
                     char answer[4]; // for "yes\n"
@@ -72,19 +67,19 @@ int copy(char source[], char destination[], int force, int interactive) {
                         printf("Nothing written\n");
                         return EXIT_SUCCESS;
                     } else {
-			return copy_file_to_file(input, file_destination);
-		    }
+                        return copy_file_to_file(input, file_destination);
+                    }
                 } else if (!force) {
                     printf("Destination %s already exists, nothing written\n", file_destination);
                     return EXIT_SUCCESS;
                 } else {
                     return copy_file_to_file(input, file_destination);
                 }
-	    } else {
-		return copy_file_to_file(input, file_destination);
-	    }
-	} else {
-	    return copy_file_to_file(input, destination);
+            } else {
+                return copy_file_to_file(input, file_destination);
+            }
+        } else {
+            return copy_file_to_file(input, destination);
         }
     }
 }
@@ -100,7 +95,7 @@ int main(int argc, char *argv[]) {
         }
     }
     if (argc - optind < 2) {
-        fprintf(stderr, "Expected SOURCE... DESTINATION after options\n");
+        fprintf(stderr, "Expected source... destination after options\n");
         wrong_usage(argv[0]);
     }
     int n_sources = argc - optind - 1;
@@ -113,12 +108,12 @@ int main(int argc, char *argv[]) {
     struct stat dest;
     if (n_sources > 1 && stat(destination, &dest) == 0 && !S_ISDIR(dest.st_mode)) {
         fprintf(stderr, "When multiple sources, destination %s should be a directory!\nNothing written\n", destination);
-        abort();
+        exit(EXIT_FAILURE);
     }
     if (n_sources > 1 && access(destination, F_OK) == -1) {
         if (mkdir(destination, S_IRWXU | S_IRWXG) < 0) {
             fprintf(stderr, "Failed to create destination directory %s\n", destination);
-            abort();
+            exit(EXIT_FAILURE);
         }
     }
     for (i = 0; i < n_sources; i++) {
