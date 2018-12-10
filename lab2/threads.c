@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     if (argc == 2) {
         graph_filename = argv[1];
     } else if (argc > 2) {
-        fprintf(stderr, "Usage: %s [GRAPH]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [graph_file]\n", argv[0]);
         exit(EXIT_FAILURE);
     }
     // read graph
