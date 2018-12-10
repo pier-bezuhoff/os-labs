@@ -2,66 +2,102 @@
 ;; --------------------------------------------------------------------------
 ;; Desktop File for Emacs
 ;; --------------------------------------------------------------------------
-;; Created Fri Dec  7 23:49:22 2018
+;; Created Sun Dec  9 02:33:43 2018
 ;; Desktop file format version 208
 ;; Emacs version 26.1
 
 ;; Global section:
-(setq desktop-saved-frameset [frameset 1 (23562 56530 15241 742000) (desktop . "208") "pierbezuhoff@dell-g3-3579" nil nil ((((minibuffer . t) (undecorated) (override-redirect) (font-backend xft x) (font . "-1ASC-Droid Sans Mono-normal-normal-normal-*-23-*-*-*-m-0-iso10646-1") (font-parameter . "Droid Sans Mono 14") (border-width . 0) (internal-border-width . 0) (right-divider-width . 0) (bottom-divider-width . 0) (vertical-scroll-bars) (horizontal-scroll-bars) (foreground-color . "#f6f3e8") (background-color . "#242424") (mouse-color . "black") (border-color . "black") (screen-gamma) (line-spacing) (left-fringe . 8) (right-fringe . 8) (no-special-glyphs) (scroll-bar-foreground) (scroll-bar-background) (menu-bar-lines . 0) (tool-bar-lines . 0) (title) (wait-for-wm . t) (tool-bar-position . top) (inhibit-double-buffering) (icon-type . t) (auto-raise) (auto-lower) (cursor-type . box) (scroll-bar-width . 0) (scroll-bar-height . 0) (alpha) (no-focus-on-map) (no-accept-focus) (fullscreen . maximized) (visibility . t) (skip-taskbar) (z-group) (display-type . color) (background-mode . dark) (cursor-color . "#656565") (sticky) (environment) (frameset--id . "DA1A-D442-DFB4-199A") (frameset--mini t . t) (modeline . t) (unsplittable) (icon-name) (display . ":0") (explicit-name) (height . 36) (width . 136) (left + -1) (top . 33)) ((min-height . 4) (min-width . 10) (min-height-ignore . 2) (min-width-ignore . 4) (min-height-safe . 1) (min-width-safe . 2) (min-pixel-height . 112) (min-pixel-width . 140) (min-pixel-height-ignore . 56) (min-pixel-width-ignore . 56) (min-pixel-height-safe . 28) (min-pixel-width-safe . 28)) leaf (pixel-width . 1920) (pixel-height . 981) (total-width . 137) (total-height . 35) (normal-height . 1.0) (normal-width . 1.0) (buffer "process_addition.c" (selected . t) (hscroll . 0) (fringes 8 8 nil) (margins nil) (scroll-bars nil 0 t nil 0 t) (vscroll . 0) (dedicated) (point . 831) (start . 503))))])
+(setq desktop-saved-frameset [frameset 1 (23564 21719 781469 483000) (desktop . "208") "pierbezuhoff@dell-g3-3579" nil nil ((((minibuffer . t) (undecorated) (override-redirect) (font-backend xft x) (font . "-1ASC-Droid Sans Mono-normal-normal-normal-*-23-*-*-*-m-0-iso10646-1") (font-parameter . "Droid Sans Mono 14") (border-width . 0) (internal-border-width . 0) (right-divider-width . 0) (bottom-divider-width . 0) (vertical-scroll-bars) (horizontal-scroll-bars) (foreground-color . "#f6f3e8") (background-color . "#242424") (mouse-color . "black") (border-color . "black") (screen-gamma) (line-spacing) (left-fringe . 8) (right-fringe . 8) (no-special-glyphs) (scroll-bar-foreground) (scroll-bar-background) (menu-bar-lines . 0) (tool-bar-lines . 0) (title) (wait-for-wm . t) (tool-bar-position . top) (inhibit-double-buffering) (icon-type . t) (auto-raise) (auto-lower) (cursor-type . box) (scroll-bar-width . 0) (scroll-bar-height . 0) (alpha) (no-focus-on-map) (no-accept-focus) (fullscreen . maximized) (visibility . t) (skip-taskbar) (z-group) (display-type . color) (background-mode . dark) (cursor-color . "#656565") (sticky) (environment) (frameset--id . "DA1A-D442-DFB4-199A") (frameset--mini t . t) (modeline . t) (unsplittable) (icon-name) (display . ":0") (explicit-name) (height . 36) (width . 136) (left + -1) (top . 33)) ((min-height . 4) (min-width . 10) (min-height-ignore . 2) (min-width-ignore . 4) (min-height-safe . 1) (min-width-safe . 2) (min-pixel-height . 112) (min-pixel-width . 140) (min-pixel-height-ignore . 56) (min-pixel-width-ignore . 56) (min-pixel-height-safe . 28) (min-pixel-width-safe . 28)) leaf (pixel-width . 1920) (pixel-height . 981) (total-width . 137) (total-height . 35) (normal-height . 1.0) (normal-width . 1.0) (buffer "thread_addition.c" (selected . t) (hscroll . 0) (fringes 8 8 nil) (margins nil) (scroll-bars nil 0 t nil 0 t) (vscroll . 0) (dedicated) (point . 3950) (start . 3235))))])
 (setq desktop-missing-file-warning nil)
 (setq tags-file-name nil)
 (setq tags-table-list nil)
-(setq search-ring '("int"))
+(setq search-ring '("DEB" "lo" "ge" "lo" "un" "cound" "on" "t_ma" "ix" "int"))
 (setq regexp-search-ring nil)
 (setq register-alist nil)
-(setq file-name-history '("~/Programming/os-labs/" "/home/pierbezuhoff/Programming/os-labs/lab3/Makefile" "/home/pierbezuhoff/Programming/os-labs/lab2/processes.c" "~/Programming/os-labs/" "~/Programming/os-labs/lab3/process_addition.c"))
+(setq file-name-history '("~/Programming/os-labs/" "/home/pierbezuhoff/Programming/os-labs/lab1/copy.c" "/home/pierbezuhoff/Programming/os-labs/lab3/thread_addition.c" "/home/pierbezuhoff/Programming/os-labs/lab2/threads.c" "~/Programming/os-labs/lab3/thread_addition.c" "~/Programming/os-labs/" "/home/pierbezuhoff/Programming/os-labs/lab2/threads.c" "/home/pierbezuhoff/Programming/os-labs/lab3/matrix.c" "~/Programming/os-labs/" "/home/pierbezuhoff/Programming/os-labs/lab3/Makefile" "/home/pierbezuhoff/Programming/os-labs/lab2/processes.c" "~/Programming/os-labs/" "~/Programming/os-labs/lab3/process_addition.c"))
 
 ;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 208
+  "/home/pierbezuhoff/Programming/os-labs/lab3/thread_addition.c"
+  "thread_addition.c"
+  'c-mode
+  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
+  3950
+  '(4002 nil)
+  nil
+  nil
+  '((buffer-display-time 23564 21718 810184 107000) (buffer-file-coding-system . undecided-unix))
+  '((mark-ring (3235 3183 3127 3127 3381 3348 3344 1 4847 4457 185 3275 2961 511 135 120))))
+
 (desktop-create-buffer 208
   "/home/pierbezuhoff/Programming/os-labs/lab3/process_addition.c"
   "process_addition.c"
   'c-mode
   '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
-  831
-  '(503 nil)
+  4016
+  '(3963 nil)
   nil
   nil
-  '((buffer-display-time 23562 56528 948438 91000) (buffer-file-coding-system . utf-8-unix))
-  '((mark-ring (1398 1398 774 503 1398 503 1398 1 2594 886 819 503 1398 503 1398 868))))
+  '((buffer-display-time 23564 21714 169805 318000) (buffer-file-coding-system . utf-8-unix))
+  '((mark-ring (3196 3140 3140 3385 3357 3109 3248 3140 3326 3326 3305 3665 3695 3695 3468 3742))))
+
+(desktop-create-buffer 208
+  "/home/pierbezuhoff/Programming/os-labs/lab1/copy.c"
+  "copy.c"
+  'c-mode
+  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
+  296
+  '(3361 nil)
+  nil
+  nil
+  '((buffer-display-time 23564 5553 562499 957000) (buffer-file-coding-system . undecided-unix))
+  '((mark-ring (3040 1 2955 1 2955 1))))
 
 (desktop-create-buffer 208
   "/home/pierbezuhoff/Programming/os-labs/lab3/Makefile"
   "Makefile"
   'makefile-gmake-mode
   '(override-global-mode)
-  267
-  '(157 nil)
+  360
+  '(199 nil)
   nil
   nil
-  '((indent-tabs-mode . t) (buffer-display-time 23562 56527 96893 390000) (buffer-file-coding-system . undecided-unix))
-  '((mark-ring (63))))
-
-(desktop-create-buffer 208
-  "/home/pierbezuhoff/Programming/os-labs/lab2/processes.c"
-  "processes.c"
-  'c-mode
-  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
-  1
-  '(nil nil)
-  nil
-  nil
-  '((buffer-display-time 23562 48736 785276 601000) (buffer-file-coding-system . undecided-unix))
-  '((mark-ring nil)))
+  '((indent-tabs-mode . t) (buffer-display-time 23564 1916 105314 66000) (buffer-file-coding-system . undecided-unix))
+  '((mark-ring (199 193 129 192 128))))
 
 (desktop-create-buffer 208
   nil
   "lab3"
   'dired-mode
   '(override-global-mode)
-  260
+  261
   '(nil nil)
   t
   '("/home/pierbezuhoff/Programming/os-labs/lab3/")
-  '((buffer-display-time 23562 42247 108441 367000))
+  '((buffer-display-time 23564 1705 150720 561000))
+  '((mark-ring nil)))
+
+(desktop-create-buffer 208
+  "/home/pierbezuhoff/Programming/os-labs/lab2/threads.c"
+  "threads.c"
+  'c-mode
+  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
+  675
+  '(1 nil)
+  nil
+  nil
+  '((buffer-display-time 23563 58499 97210 167000) (buffer-file-coding-system . undecided-unix))
+  '((mark-ring nil)))
+
+(desktop-create-buffer 208
+  "/home/pierbezuhoff/Programming/os-labs/lab2/processes.c"
+  "processes.c"
+  'c-mode
+  '(abbrev-mode eldoc-mode company-mode override-global-mode irony-mode flycheck-mode)
+  368
+  '(1435 nil)
+  nil
+  nil
+  '((buffer-display-time 23563 48294 405186 641000) (buffer-file-coding-system . undecided-unix))
   '((mark-ring nil)))
 

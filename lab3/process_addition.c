@@ -1,11 +1,16 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <semaphore.h>
 #include <signal.h>
 #include <sys/shm.h>
 
+int debug = 1;
+int countdown = 0;
+FILE *output; // default stdout
+const int DEFAULT_COUNTDOWN = 5;
 const int MIN_WIDTH = 2;
 const int MAX_WIDTH = 6;
 const int MIN_HEIGHT = 2;
@@ -65,12 +70,12 @@ void spawn_adder() {
     }
 }
 
-void print_matrix(int *matrix) {
+void fprint_matrix(FILE *file, int *matrix) {
     for (int row = 0; row < *height; row++) {
         for (int column = 0; column < *width; column++) {
-            printf("%d ", matrix[row * *width + column]);
+            fprintf(file, "%d ", matrix[row * *width + column]);
         }
-        printf("\n");
+        fprintf(file, "\n");
     }
 }
 
@@ -78,12 +83,12 @@ void spawn_printer() {
     if (fork() == 0) {
         sem_wait(on_added);
         while (!*end) {
-            print_matrix(matrix1);
-            printf(" +\n");
-            print_matrix(matrix2);
-            printf(" =\n");
-            print_matrix(result_matrix);
-            printf("\n");
+            fprint_matrix(output, matrix1);
+            fprintf(output, " +\n");
+            fprint_matrix(output, matrix2);
+            fprintf(output, " =\n");
+            fprint_matrix(output, result_matrix);
+            fprintf(output, "\n");
             sem_post(on_done);
             sem_post(on_printed);
             sem_wait(on_added);
@@ -106,11 +111,42 @@ void on_interruption(int signo) {
     sem_post(on_printed);
     sem_post(on_generated);
     sem_post(on_added);
+    if (debug)
+        printf("Interrupted (%d)\n", signo);
     exit(EXIT_SUCCESS);
 }
 
+void wrong_usage(char *cmd) {
+    fprintf(stderr, "Usage: %s [-o outfile] [-v|-q] [-c countdown|-C]\n", cmd);
+    exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[]) {
-    // argc == 2 => read matrix from file
+    output = stdout;
+    int new_countdown;
+    FILE *file;
+    int opt;
+    while ((opt = getopt(argc, argv, "o:vqc:C")) != -1) {
+        switch (opt) {
+        case 'o':
+            file = fopen(optarg, "w");
+            if (file != NULL)
+                output = file;
+            break;
+        case 'v': debug = 1; break;
+        case 'q': debug = 0; break;
+        case 'c':
+            if (optarg != NULL && sscanf(optarg, "%d", &new_countdown) == 1)
+                countdown = new_countdown;
+            else
+                countdown = DEFAULT_COUNTDOWN;
+            break;
+        case 'C': countdown = 0; break;
+        default: wrong_usage(argv[0]);
+        }
+    }
+    if (optind < argc)
+        wrong_usage(argv[0]);
     // setup shared memory
     width = shm_alloc(sizeof(int));
     height = shm_alloc(sizeof(int));
@@ -125,15 +161,18 @@ int main(int argc, char *argv[]) {
     *end = 0;
     // start
     signal(SIGINT, on_interruption);
+    signal(SIGTERM, on_interruption);
     spawn_generator();
     spawn_adder();
     spawn_printer();
     sem_post(on_printed); // invoke generator
     // stop
-    int countdown = 5;
-    while (1 /*countdown > 0*/) {
+    int count = countdown;
+    while (!countdown || count > 0) {
         sem_wait(on_done);
-        countdown--;
+        count--;
     }
-    on_interruption(0);
+    if (debug)
+        printf("Countdown forced interruption\n");
+    on_interruption(SIGINT);
 }
