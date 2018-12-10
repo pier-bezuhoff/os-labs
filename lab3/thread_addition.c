@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <pthread.h>
 
 int debug = 1;
-int countdown = 5;
+int countdown = 0;
 FILE *output; // default stdout
 const int DEFAULT_COUNTDOWN = 5;
 const int MIN_WIDTH = 2;
@@ -18,8 +19,7 @@ int height;
 int *matrix1; // matrices are flattened
 int *matrix2;
 int *result_matrix;
-pthread_cond_t generated, added, printed, done;
-pthread_mutex_t mutex;
+sem_t on_generated, on_added, on_printed, on_done;
 int end; // volatile?
 
 int randrange(int min, int max) {
@@ -29,10 +29,8 @@ int randrange(int min, int max) {
 void *start_generator(void *_) {
     time_t t;
     srand((unsigned) time(&t));
-    pthread_cond_wait(&printed, &mutex);
+    sem_wait(&on_printed);
     while (!end) {
-        if (debug)
-            printf("generating...\n");
         width = randrange(MIN_WIDTH, MAX_WIDTH);
         height = randrange(MIN_HEIGHT, MAX_HEIGHT);
         for (int row = 0; row < height; row++) {
@@ -42,57 +40,51 @@ void *start_generator(void *_) {
                 matrix2[ix] = randrange(-100, 100);
             }
         }
-        pthread_cond_signal(&generated);
-        pthread_cond_wait(&printed, &mutex);
+        sem_post(&on_generated);
+        sem_wait(&on_printed);
     }
-    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
 void *start_adder(void *_) {
-    pthread_cond_wait(&generated, &mutex);
+    sem_wait(&on_generated);
     while (!end) {
-        if (debug)
-            printf("adding...\n");
         for (int row = 0; row < height; row++) {
             for (int column = 0; column < width; column++) {
                 int ix = row * width + column;
                 result_matrix[ix] = matrix1[ix] + matrix2[ix];
             }
         }
-        pthread_cond_signal(&added);
-        pthread_cond_wait(&generated, &mutex);
+        sem_post(&on_added);
+        sem_wait(&on_generated);
     }
-    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
-void print_matrix(int *matrix) {
+void fprint_matrix(FILE *file, int *matrix) {
     for (int row = 0; row < height; row++) {
         for (int column = 0; column < width; column++) {
-            printf("%d ", matrix[row * width + column]);
+            fprintf(file, "%d ", matrix[row * width + column]);
         }
-        printf("\n");
+        fprintf(file, "\n");
     }
 }
 
 void *start_printer(void *_) {
-    pthread_cond_wait(&added, &mutex);
+    sem_wait(&on_added);
     while (!end) {
-        if (debug)
-            printf("printing...\n");
-        print_matrix(matrix1);
-        printf(" +\n");
-        print_matrix(matrix2);
-        printf(" =\n");
-        print_matrix(result_matrix);
-        printf("\n");
+        fprint_matrix(output, matrix1);
+        fprintf(output, " +\n");
+        fprint_matrix(output, matrix2);
+        fprintf(output, " =\n");
+        fprint_matrix(output, result_matrix);
+        fprintf(output, "\n");
         if (countdown)
-            pthread_cond_signal(&done);
-        pthread_cond_signal(&printed);
-        pthread_cond_wait(&added, &mutex);
+            sem_post(&on_done);
+        sem_post(&on_printed);
+        sem_wait(&on_added);
     }
-    pthread_mutex_unlock(&mutex);
+    fclose(output);
     return NULL;
 }
 
@@ -100,24 +92,23 @@ void on_interruption(int signo) {
     end = 1; // notify all 3 processes
     if (debug)
         printf("Interrupted (%d)\n", signo);
-    pthread_cond_broadcast(&generated);
-    pthread_cond_broadcast(&added);
-    pthread_cond_broadcast(&printed);
+    sem_post(&on_generated);
+    sem_post(&on_added);
+    sem_post(&on_printed);
     if (countdown)
-        pthread_cond_broadcast(&done);
+        sem_post(&on_done);
     exit(EXIT_SUCCESS);
 }
 
 void *start_countdown(void *_) {
-    int countdown = 5;
-    while (!end && countdown > 0) {
-        pthread_cond_wait(&done, &mutex);
-        countdown--;
+    int count = countdown;
+    while (!end && count > 0) {
+        sem_wait(&on_done);
+        count--;
     }
     if (!end && debug)
         printf("Countdown forced interruption\n");
     on_interruption(SIGINT);
-    pthread_mutex_unlock(&mutex);
     return NULL;
 }
 
@@ -155,21 +146,23 @@ int main(int argc, char *argv[]) {
     matrix1 = malloc(MAX_WIDTH * MAX_HEIGHT * sizeof(int));
     matrix2 = malloc(MAX_WIDTH * MAX_HEIGHT * sizeof(int));
     result_matrix = malloc(MAX_WIDTH * MAX_HEIGHT * sizeof(int));
+
+    sem_init(&on_generated, 0, 0);
+    sem_init(&on_added, 0, 0);
+    sem_init(&on_printed, 0, 0);
+    sem_init(&on_done, 0, 0);
     end = 0;
-    pthread_cond_init(&generated, NULL);
-    pthread_cond_init(&added, NULL);
-    pthread_cond_init(&printed, NULL);
-    pthread_cond_init(&done, NULL);
     // start
     signal(SIGINT, on_interruption);
     signal(SIGTERM, on_interruption);
-    pthread_t counter, generator, adder, printer;
+    pthread_t generator, adder, printer, counter;
     pthread_create(&generator, NULL, start_generator, NULL);
     pthread_create(&adder, NULL, start_adder, NULL);
     pthread_create(&printer, NULL, start_printer, NULL);
-    pthread_cond_signal(&printed); // start generator
     if (countdown)
         pthread_create(&counter, NULL, start_countdown, NULL);
+    sem_post(&on_printed); // start generator
+    // stop
     pthread_join(generator, NULL);
     pthread_join(adder, NULL);
     pthread_join(printer, NULL);

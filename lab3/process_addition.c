@@ -93,6 +93,7 @@ void spawn_printer() {
             sem_post(on_printed);
             sem_wait(on_added);
         }
+        fclose(output);
         exit(EXIT_SUCCESS);
     }
 }
