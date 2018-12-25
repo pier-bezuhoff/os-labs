@@ -104,17 +104,8 @@ int main(int argc, char *argv[]) {
     for (i = optind; i < argc - 1; i++) {
         sources[i - optind] = argv[i];
     }
-    struct stat dest;
-    int all_files = 1;
-    for (int i = 0; i < n_sources; i++) {
-        if (stat(sources[i], &dest) == 0 && S_ISDIR(dest.st_mode))
-            all_files = 0;
-    }
-    if (!all_files) {
-        fprintf(stderr, "All sources should be files\n");
-        exit(EXIT_FAILURE);
-    }
     char *destination = argv[argc - 1];
+    struct stat dest;
     if (n_sources > 1 && stat(destination, &dest) == 0 && !S_ISDIR(dest.st_mode)) {
         fprintf(stderr, "When multiple sources, destination %s should be a directory!\nNothing written\n", destination);
         exit(EXIT_FAILURE);

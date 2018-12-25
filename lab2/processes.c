@@ -49,8 +49,11 @@ int spawn_children(int process_id) {
         char buffer[MAX_COUNT_LENGTH];
         pipe(io);
         if (fork() == 0) { // in child
-            if (DEBUG)
+            if (DEBUG) {
                 printf("%d -> %d\n", process_id, child_id);
+                printf("me: %d\n", getpid());
+                printf("parent: %d\n", getppid());
+            }
             spawn_process(child_id, io[1]);
         }
         read(io[0], buffer, MAX_COUNT_LENGTH);
