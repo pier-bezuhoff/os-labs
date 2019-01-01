@@ -17,20 +17,18 @@ int main(int argc, char *argv[]) {
     address.sin_port = htons(PORT);
     bind(socket_fd, (struct sockaddr *) &address, sizeof(address));
     listen(socket_fd, 3);
-    socklen_t length;
-    int new_socket = accept(socket_fd, (struct sockaddr *) &address, &length);
-    int n = read(new_socket, buffer, MAX_LENGTH);
-    buffer[n] = '\0';
-    printf("Server got %s\n", buffer);
-    while (!is_exit(buffer, n)) {
+    socklen_t length = sizeof(address);
+    int client_socket;
+    int n;
+    while (1) {
+        client_socket = accept(socket_fd, (struct sockaddr *) &address, &length);
+        n = read(client_socket, buffer, MAX_LENGTH);
+        printf("Server got %s\n", buffer);
+        if (is_exit(buffer, n))
+            break;
         process_message(buffer, n);
         printf("Server sent %s\n", buffer);
-        write(new_socket, buffer, n);
-        bzero(buffer, MAX_LENGTH);
-        while (strlen(buffer) == 0)
-            n = read(new_socket, buffer, MAX_LENGTH);
-        buffer[n] = '\0';
-        printf("Server got %s\n", buffer);
-    }
+        write(client_socket, buffer, n);
+    };
     close(socket_fd);
 }
